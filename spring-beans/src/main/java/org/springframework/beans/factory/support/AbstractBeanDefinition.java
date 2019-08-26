@@ -29,8 +29,11 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccessor
 		implements BeanDefinition, Cloneable {
 
-	//第一部分：一些常量
-	//默认scope值，bean的作用范围
+	//=====================定义众多常量。这一些常量会直接影响到spring实例化Bean时的策略
+	// 个人觉得这些常量的定义不是必须的，在代码里判断即可。
+	// Spring定义这些常量的原因很简单，便于维护，让读代码的人知道每个值的意义(所以以后我们在书写代码时，也可以这么来搞)
+
+	//默认的SCOPE，默认是单例
 	public static final String SCOPE_DEFAULT = "";
 	//自动装配方式常量
 	//不自动装配，需手动注入
@@ -55,27 +58,32 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int DEPENDENCY_CHECK_ALL = 3;
 	public static final String INFER_METHOD = "(inferred)";
 
+	//=====================属性：基本囊括了Bean实例化需要的所有信息
+
+	//Bean的class对象或是类的全限定名
 	//存放bean的class对象
 	@Nullable
 	private volatile Object beanClass;
-	//bean的作用范围
+	//默认的scope是单例
 	@Nullable
 	private String scope = SCOPE_DEFAULT;
-	//是否抽象
+	//默认不为抽象类
 	private boolean abstractFlag = false;
 	//是否延迟加载
 	@Nullable
 	private Boolean lazyInit;
 	//默认不自动装配
 	private int autowireMode = AUTOWIRE_NO;
-	//默认依赖检查：无依赖
+	//默认不进行依赖检查
 	private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 	//依赖列表
+	//// @@DependsOn 默认没有
 	@Nullable
 	private String[] dependsOn;
-	//当前bean时候做为自动装配的候选者
+	// autowire-candidate属性设置为false，这样容器在查找自动装配对象时，将不考虑该bean，
+	// 备注：并不影响本身注入其它的Bean
 	private boolean autowireCandidate = true;
-	//默认为非主候选
+	// 默认不是首选的
 	private boolean primary = false;
 	//用于纪录qualifier，对应子元素Qualifier
 	// @Qualifier 注释和 @Autowired 注释通过指定哪一个真正的 bean 将会被装配来消除混乱

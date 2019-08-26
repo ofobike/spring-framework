@@ -27,19 +27,16 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Simple implementation of the {@link BeanDefinitionRegistry} interface.
- * Provides registry capabilities only, with no factory capabilities built in.
- * Can for example be used for testing bean definition readers.
- *
- * @author Juergen Hoeller
- * @since 2.5.2
+ * 简单BeanDefinnitionRegistry
  */
 public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements BeanDefinitionRegistry {
 
-	/** Map of bean definition objects, keyed by bean name. */
+	//注册列表
+	//存储用的是ConcurrentHashMap，可以保证线程安全
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(64);
 
 
+	//向注册列表中注册Bean信息
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -49,6 +46,11 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		this.beanDefinitionMap.put(beanName, beanDefinition);
 	}
 
+	/**
+	 * 移除BeanDefinition信息
+	 * @param beanName
+	 * @throws NoSuchBeanDefinitionException
+	 */
 	@Override
 	public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
 		if (this.beanDefinitionMap.remove(beanName) == null) {
@@ -56,6 +58,12 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		}
 	}
 
+	/**
+	 * 获取BeanDefinition信息
+	 * @param beanName
+	 * @return
+	 * @throws NoSuchBeanDefinitionException
+	 */
 	@Override
 	public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
 		BeanDefinition bd = this.beanDefinitionMap.get(beanName);
@@ -65,6 +73,11 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		return bd;
 	}
 
+	/**
+	 * 是否包含信息
+	 * @param beanName
+	 * @return
+	 */
 	@Override
 	public boolean containsBeanDefinition(String beanName) {
 		return this.beanDefinitionMap.containsKey(beanName);
