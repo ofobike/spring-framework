@@ -135,48 +135,53 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			javaxInjectProviderClass = null;
 		}
 	}
+	/** 存储映射serializedId->DefaultListableBeanFactory的弱引用实例*/
 
-
-	/** Map from serialized id to factory instance. */
 	private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories =
 			new ConcurrentHashMap<>(8);
 
-	/** Optional id for this factory, for serialization purposes. */
+	/** 当前工厂的可选序列化id */
 	@Nullable
 	private String serializationId;
 
-	/** Whether to allow re-registration of a different definition with the same name. */
+	/** 是否允许同名的不同bean definition再次进行注册
+	 * 在注册BeanDefinition发现存在同名BeanDefinition时，会检查当前变量，
+	 * 如果为false会抛出BeanDefinitionStoreException */
 	private boolean allowBeanDefinitionOverriding = true;
 
-	/** Whether to allow eager class loading even for lazy-init beans. */
+	/** 是否允许eager类（相对于lazy）的加载，甚至延迟初始化的bean的加载，
+	 * 主要用于在调用doGetBeanNamesForType辅助寻找符合type要求的beanName */
 	private boolean allowEagerClassLoading = true;
 
-	/** Optional OrderComparator for dependency Lists and arrays. */
+
 	@Nullable
 	private Comparator<Object> dependencyComparator;
 
-	/** Resolver to use for checking if a bean definition is an autowire candidate. */
+	/**是一个策略接口，用来决定一个特定的bean definition 是否满足做一个特定依赖的自动绑定的候选项
+	 * 里面定义了isAutowireCandidate方法用来判断一个Bean是否参与自动装配候选以及getSuggestedValue方法找出最佳候选Bean*/
 	private AutowireCandidateResolver autowireCandidateResolver = new SimpleAutowireCandidateResolver();
 
-	/** Map from dependency type to corresponding autowired value. */
+	/** 定义了依赖类型和其对应的依赖注入对象键值对集合。 */
 	private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
-	/** Map of bean definition objects, keyed by bean name. */
+	/** 定义了BeanName->BeanDefinition的映射关系 */
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
 
-	/** Map of singleton and non-singleton bean names, keyed by dependency type. */
+	/** 定义了依赖类型->BeanNames的映射关系，包括单例和原型Bean
+	 * 具体存储原理是先根据BeanName读取beanDefinitionNames对象或frozenBeanDefinitionNames对象
+	 * 再调用getMergedLocalBeanDefinition(beanName)方法拿到具体的BeanDefinition,比对BeanClass，满足要求的都保存到List统一返回*/
 	private final Map<Class<?>, String[]> allBeanNamesByType = new ConcurrentHashMap<>(64);
 
-	/** Map of singleton-only bean names, keyed by dependency type. */
+	/** 类似于allBeanNamesByType，不过只包含单例Bean */
 	private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<>(64);
 
-	/** List of bean definition names, in registration order. */
+	/** 根据注册顺序，存储所有的beanDefinitionName，即beanName */
 	private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
-	/** List of names of manually registered singletons, in registration order. */
+	/** 配置是否冻结 在初始化完BeanFactory,开始初始化所有单例非懒加载Bean时调用finishBeanFactoryInitialization方法进行冻结*/
 	private volatile Set<String> manualSingletonNames = new LinkedHashSet<>(16);
 
-	/** Cached array of bean definition names in case of frozen configuration. */
+	/** 在设置上一布尔变量同时缓存当前时刻的所有beanDefinitionNames到当前属性 */
 	@Nullable
 	private volatile String[] frozenBeanDefinitionNames;
 
